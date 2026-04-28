@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open AI Styled UI</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body>
+
+<div class="bg-blur blur1"></div>
+<div class="bg-blur blur2"></div>
+
+<div class="main">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+
+    <div>
+      <!-- Logo -->
+      <div class="logo">
+        <span class="logo-icon">⬢</span>
+        <span class="logo-text">KRSNA.I</span>
+      </div>
+
+      <!-- MENU -->
+      <nav class="menu">
+
+        <a href="{{ url_for('main') }}">
+          <i class="fa-regular fa-pen-to-square"></i> New chats
+        </a>
+
+        <!-- SEARCH -->
+        <form action="{{ url_for('search_chats') }}" method="POST" class="sidebar-search-form">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <input
+              type="text"
+              name="keyword"
+              placeholder="Search chats..."
+              value="{{ search_keyword if search_keyword else '' }}"
+              required
+            >
+
+            <button type="submit">Go</button>
+          </div>
+        </form>
+
+        <a href="#"><i class="fa-regular fa-image"></i> Images</a>
+        <a href="#"><i class="fa-solid fa-table-cells-large"></i> Apps</a>
+        <a href="#"><i class="fa-regular fa-folder-open"></i> Projects</a>
+
+      </nav>
+
+      {% if search_keyword %}
+      <div class="back-btn">
+        <a href="{{ url_for('main') }}">← Show All Chats</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ================= HISTORY ================= -->
+    <div class="bottom-section">
+
+      <p class="chat-label">
+        {% if search_keyword %}
+          Results for "{{ search_keyword }}"
+        {% else %}
+          Your Chats
+        {% endif %}
+      </p>
+
+      <div class="chat-history-list">
+        {% if chats %}
+          {% for chat in chats|reverse %}
+            <a href="{{ url_for('open_chat', chat_id=chat['id']) }}" class="chat-card chat-link">
+              <span>{{ chat["user_message"] }}</span>
+            </a>
+          {% endfor %}
+        {% else %}
+          <div class="chat-card">
+            <span>No chats found</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- PROFILE -->
+      <div class="profile">
+        <div class="profile-text">
+          <h4>{{ username }}</h4>
+          <span>Logged In</span>
+        </div>
+
+        <a href="{{ url_for('logout') }}" class="logout-btn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </a>
+      </div>
+
+    </div>
+
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="content">
+
+    <div class="top-bar">
+      <button class="theme-btn" type="button">
+        <i class="fa-regular fa-star"></i> Upgrade Style
+      </button>
+    </div>
+
+    <div class="hero">
+      <p class="subtitle">SMART CONVERSATIONS • CREATIVE TOOLS • AI WORKSPACE</p>
+      <h1>What’s on your mind today?</h1>
+      <p class="desc">
+        Start a new conversation, generate ideas, build projects, and explore creative possibilities.
+      </p>
+
+      <div class="chat-wrapper">
+
+        <!-- FLASH -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, msg in messages %}
+              <div class="flash {{ category }}">{{ msg }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- MESSAGES -->
+        <div class="messages-area">
+
+          {% if current_user_message %}
+          <div class="chat-box user-msg">
+            <div class="box-head"><h4>You</h4></div>
+            <div class="msg-text">
+              <p style="white-space: pre-wrap;">{{ current_user_message }}</p>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if current_ai_message %}
+          <div class="chat-box ai-msg">
+            <div class="box-head"><h4>AI</h4></div>
+            <div class="msg-text">
+              <p style="white-space: pre-wrap;">{{ current_ai_message }}</p>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if image_file %}
+          <div class="chat-box ai-msg">
+            <div class="box-head"><h4>Generated Image</h4></div>
+
+            <div class="msg-text image-wrap">
+              <img src="{{ url_for('static', filename=image_file) }}" class="generated-image">
+            </div>
+
+            <div class="download-section">
+              <a href="{{ url_for('static', filename=image_file) }}" download class="download-btn">
+                <i class="fa-solid fa-download"></i> Download Image
+              </a>
+            </div>
+          </div>
+          {% endif %}
+
+        </div>
+
+        <!-- INPUT -->
+        <form action="{{ url_for('ask_ai') }}" method="POST" class="input-box" enctype="multipart/form-data">
+
+          <!-- hidden file input -->
+          <input type="file" id="fileInput" name="chat_file" style="display:none;">
+
+          <!-- plus -->
+          <button type="button" class="icon-btn" id="plusBtn">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+
+          <input
+            type="text"
+            name="prompt"
+            placeholder="Ask anything or generate an image..."
+            value="{{ quick_prompt if quick_prompt else '' }}"
+            required
+            autocomplete="off"
+          >
+
+          <div class="input-actions">
+
+            <!-- paperclip -->
+            <button type="button" class="icon-btn" id="attachBtn">
+              <i class="fa-solid fa-paperclip"></i>
+            </button>
+
+            <button type="button" class="icon-btn">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
+
+            <button type="submit" class="send-btn">
+              <i class="fa-solid fa-arrow-up"></i>
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+      <!-- QUICK ACTIONS -->
+      <div class="quick-actions">
+
+        <form action="{{ url_for('main') }}" method="POST">
+          <input type="hidden" name="quick_prompt" value="Design a landing page">
+          <button type="submit">Design a landing page</button>
+        </form>
+
+        <form action="{{ url_for('main') }}" method="POST">
+          <input type="hidden" name="quick_prompt" value="Write some code">
+          <button type="submit">Write some code</button>
+        </form>
+
+        <form action="{{ url_for('main') }}" method="POST">
+          <input type="hidden" name="quick_prompt" value="Generate UI ideas">
+          <button type="submit">Generate UI ideas</button>
+        </form>
+
+        <form action="{{ url_for('main') }}" method="POST">
+          <input type="hidden" name="quick_prompt" value="Explain a concept">
+          <button type="submit">Explain a concept</button>
+        </form>
+
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<!-- JS -->
+<script>
+const messagesArea = document.querySelector(".messages-area");
+if (messagesArea) {
+  messagesArea.scrollTop = messagesArea.scrollHeight;
+}
+
+const fileInput = document.getElementById("fileInput");
+const plusBtn = document.getElementById("plusBtn");
+const attachBtn = document.getElementById("attachBtn");
+
+if (plusBtn) {
+  plusBtn.addEventListener("click", () => fileInput.click());
+}
+
+if (attachBtn) {
+  attachBtn.addEventListener("click", () => fileInput.click());
+}
+</script>
+
+</body>
+</html>

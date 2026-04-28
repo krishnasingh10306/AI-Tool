@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset OTP</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='reset_otp.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+  <div class="login">
+
+    <h1>RESET <span>OTP</span></h1>
+    <p class="text">Enter the OTP sent to your email</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="flash {{ category }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+      <input class="input" type="text" name="otp" placeholder="Enter OTP" required>
+      <button class="btn" type="submit">VERIFY OTP</button>
+    </form>
+
+    <h2>OR</h2>
+
+    <p class="signup">
+      Back to
+      <a href="{{ url_for('forgot_password') }}">Forgot Password</a>
+    </p>
+
+  </div>
+
+  <div class="image">
+    <img src="{{ url_for('static', filename='globe.png') }}" alt="AI Globe">
+  </div>
+
+</div>
+
+</body>
+</html>

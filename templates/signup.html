@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="signup-box">
+
+      <h1>CREATE <span>ACCOUNT</span></h1>
+      <p class="text">Join AI Network</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST">
+
+        <input
+          class="input"
+          type="text"
+          name="fullname"
+          placeholder="Full Name"
+          required
+        >
+
+        <input
+          class="input"
+          type="email"
+          name="email"
+          placeholder="Email Address"
+          required
+        >
+
+        <div class="password-wrapper">
+          <input
+            class="input"
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Password"
+            required
+          >
+
+          <span class="toggle-password" data-target="password">Show</span>
+
+          <div class="password-rules">
+            <h3>Password Rules</h3>
+            <ul>
+              <li>At least 8 characters</li>
+              <li>One uppercase letter</li>
+              <li>One lowercase letter</li>
+              <li>One number</li>
+              <li>One special character</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="password-wrapper">
+          <input
+            class="input"
+            type="password"
+            name="confirm_password"
+            id="confirm_password"
+            placeholder="Confirm Password"
+            required
+          >
+
+          <span class="toggle-password" data-target="confirm_password">Show</span>
+        </div>
+
+        <label class="check">
+          <input type="checkbox" name="terms" required>
+          I agree to Terms & Conditions
+        </label>
+
+        <button class="btn" type="submit">SIGN UP</button>
+
+      </form>
+
+      <h2>OR</h2>
+
+      <p class="login-link">
+        Already have an account?
+        <a href="{{ url_for('login_page') }}">Login</a>
+      </p>
+
+    </div>
+
+    <div class="image">
+      <img src="{{ url_for('static', filename='globe.png') }}" alt="AI Globe">
+    </div>
+
+  </div>
+
+  <script>
+    const toggles = document.querySelectorAll(".toggle-password");
+
+    toggles.forEach(function(toggle) {
+      toggle.addEventListener("click", function() {
+        const targetId = this.getAttribute("data-target");
+        const input = document.getElementById(targetId);
+
+        if (input.type === "password") {
+          input.type = "text";
+          this.textContent = "Hide";
+        } else {
+          input.type = "password";
+          this.textContent = "Show";
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>

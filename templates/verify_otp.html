@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify OTP</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Georgia, serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    .box {
+      width: 460px;
+      min-height: 420px;
+      padding: 40px 24px;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 14px;
+      background: linear-gradient(to bottom, rgba(14,14,14,0.95), rgba(0,20,30,0.7));
+      box-shadow: 0 0 15px rgba(255,255,255,0.15);
+    }
+
+    .box h1 {
+      text-align: center;
+      font-size: 28px;
+      font-weight: normal;
+      margin-top: 20px;
+    }
+
+    .box h1 span {
+      color: #19e05a;
+    }
+
+    .text {
+      text-align: center;
+      font-size: 16px;
+      margin-top: 12px;
+      margin-bottom: 40px;
+      color: #d7d7d7;
+    }
+
+    .input {
+      width: 100%;
+      height: 48px;
+      padding: 0 28px;
+      margin-bottom: 28px;
+      border: none;
+      outline: none;
+      border-radius: 25px;
+      font-size: 18px;
+      color: white;
+      background: linear-gradient(to right, #141114, #1d1b21);
+    }
+
+    .input::placeholder {
+      color: #cfcfcf;
+    }
+
+    .btn {
+      width: 100%;
+      height: 46px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 25px;
+      background: #34c84a;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #2eb643;
+    }
+
+    .flash {
+      width: 100%;
+      padding: 14px 16px;
+      margin-bottom: 22px;
+      border-radius: 12px;
+      font-size: 15px;
+      text-align: center;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      border-left: 5px solid;
+    }
+
+    .flash.error {
+      background: rgba(255, 59, 59, 0.12);
+      color: #ff5c5c;
+      border: 1px solid rgba(255, 70, 70, 0.45);
+      border-left-color: #ff2e2e;
+      box-shadow: 0 0 12px rgba(255, 0, 0, 0.18);
+    }
+
+    .flash.success {
+      background: rgba(52, 200, 74, 0.12);
+      color: #4be06a;
+      border: 1px solid rgba(52, 200, 74, 0.4);
+      border-left-color: #34c84a;
+      box-shadow: 0 0 12px rgba(52, 200, 74, 0.18);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="box">
+    <h1>VERIFY <span>OTP</span></h1>
+    <p class="text">Enter the OTP sent to your email</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="flash {{ category }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+      <input class="input" type="text" name="otp" placeholder="Enter OTP" required>
+      <button class="btn" type="submit">VERIFY</button>
+    </form>
+  </div>
+
+</body>
+</html>
