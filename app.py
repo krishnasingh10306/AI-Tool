@@ -72,7 +72,7 @@ def send_otp_email(receiver_email, otp):
         if not EMAIL_PASS:
             return False
 
-        sender_email = "your_email@gmail.com"
+        sender_email = "krishnasingh10306@gmail.com"
 
         msg = MIMEMultipart()
         msg["From"] = sender_email
