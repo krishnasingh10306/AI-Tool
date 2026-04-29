@@ -1,35 +1,32 @@
-import sqlite3
 import os
-
-os.makedirs("database", exist_ok=True)
+import psycopg2
 
 def db():
-    conn = sqlite3.connect("database/users.db")
-    conn.row_factory = sqlite3.Row
-    return conn
+    return psycopg2.connect(os.getenv("DATABASE_URL"))
 
 
 def create_table():
     conn = db()
+    cur = conn.cursor()
 
-    conn.execute("""
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL
+            id SERIAL PRIMARY KEY,
+            username TEXT,
+            email TEXT UNIQUE,
+            password TEXT
         )
     """)
 
-    conn.execute("""
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS chat_history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            user_message TEXT NOT NULL,
-            ai_message TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            id SERIAL PRIMARY KEY,
+            username TEXT,
+            user_message TEXT,
+            ai_message TEXT
         )
     """)
 
     conn.commit()
+    cur.close()
     conn.close()

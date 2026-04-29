@@ -1,265 +1,103 @@
-# ==============================
-# IMPORTS
-# ==============================
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from database import db, create_table
-from validation import password_validation, valid_email
-
-import random
-import smtplib
 import os
-import time
-import requests
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-from google import genai
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# ==============================
-# APP SETUP
-# ==============================
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "dev_fallback_key")
+app.secret_key = os.getenv("SECRET_KEY", "dev_key")
 
-# ==============================
-# SAFE DB INIT
-# ==============================
-try:
-    create_table()
-except Exception as e:
-    print("DB INIT ERROR:", e)
+create_table()
 
-# ==============================
-# ENV VARIABLES
-# ==============================
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-EMAIL_PASS = os.getenv("EMAIL_PASS")
-EMAIL_USER = os.getenv("EMAIL_USER")
-HF_TOKEN = os.getenv("HF_TOKEN")
-
-client = None
-if GEMINI_API_KEY:
-    try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
-    except Exception as e:
-        print("Gemini init error:", e)
-
-
-# ==============================
-# DATABASE HELPERS
-# ==============================
-def save_chat(username, user_message, ai_message):
-    try:
-        conn = db()
-        conn.execute("""
-            INSERT INTO chat_history (username, user_message, ai_message)
-            VALUES (?, ?, ?)
-        """, (username, user_message, ai_message))
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print("Save chat error:", e)
-
-
-def get_chat_history(username):
-    try:
-        conn = db()
-        chats = conn.execute("""
-            SELECT * FROM chat_history
-            WHERE username = ?
-            ORDER BY id ASC
-        """, (username,)).fetchall()
-        conn.close()
-        return chats
-    except Exception as e:
-        print("Get chat error:", e)
-        return []
-
-
-# ==============================
-# OTP EMAIL
-# ==============================
-def send_otp_email(receiver_email, otp):
-    try:
-        if not EMAIL_USER or not EMAIL_PASS:
-            return False
-
-        msg = MIMEMultipart()
-        msg["From"] = EMAIL_USER
-        msg["To"] = receiver_email
-        msg["Subject"] = "OTP Verification"
-        msg.attach(MIMEText(f"Your OTP is: {otp}", "plain"))
-
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(EMAIL_USER, EMAIL_PASS)
-        server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
-        server.quit()
-        return True
-
-    except Exception as e:
-        print("Email error:", e)
-        return False
-
-
-def generate_otp():
-    return str(random.randint(100000, 999999))
-
-
-# ==============================
-# GEMINI AI
-# ==============================
-def generate_text(prompt):
-    try:
-        if not client:
-            return "AI not configured."
-
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
-        )
-
-        return response.text.strip() if response.text else "No response"
-
-    except Exception as e:
-        print("Gemini error:", e)
-        return "AI service error"
-
-
-# ==============================
-# IMAGE GENERATION
-# ==============================
-def generate_image(prompt):
-    try:
-        if not HF_TOKEN:
-            return None, "HF_TOKEN missing"
-
-        api_url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
-
-        headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-
-        response = requests.post(
-            api_url,
-            headers=headers,
-            json={"inputs": prompt},
-            timeout=120
-        )
-
-        if response.status_code != 200:
-            return None, "Image API failed"
-
-        os.makedirs("static/generated", exist_ok=True)
-
-        filename = f"generated/img_{int(time.time())}.png"
-        path = os.path.join("static", filename)
-
-        with open(path, "wb") as f:
-            f.write(response.content)
-
-        return filename, None
-
-    except Exception as e:
-        print("Image error:", e)
-        return None, "Image generation failed"
-
-
-# ==============================
-# LOGIN
-# ==============================
+# ---------------- LOGIN ----------------
 @app.route("/", methods=["GET", "POST"])
-def login_page():
+def login():
     if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
+        email = request.form["email"]
+        password = request.form["password"]
 
         conn = db()
-        user = conn.execute(
-            "SELECT * FROM users WHERE email = ?",
-            (email,)
-        ).fetchone()
+        cur = conn.cursor()
+        cur.execute("SELECT username, password FROM users WHERE email=%s", (email,))
+        user = cur.fetchone()
+        cur.close()
         conn.close()
 
-        if user and check_password_hash(user["password"], password):
-            session["user"] = user["username"]
-            return redirect(url_for("main"))
+        if user and check_password_hash(user[1], password):
+            session["user"] = user[0]
+            return redirect("/main")
 
-        flash("Invalid login", "error")
+        flash("Invalid login")
 
     return render_template("login.html")
 
 
-# ==============================
-# MAIN PAGE (FIXED)
-# ==============================
+# ---------------- SIGNUP ----------------
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        username = request.form["username"]
+        email = request.form["email"]
+        password = generate_password_hash(request.form["password"])
+
+        conn = db()
+        cur = conn.cursor()
+
+        cur.execute("INSERT INTO users (username, email, password) VALUES (%s,%s,%s)",
+                    (username, email, password))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return redirect("/")
+
+    return render_template("signup.html")
+
+
+# ---------------- MAIN ----------------
 @app.route("/main")
 def main():
-    user = session.get("user")
+    if "user" not in session:
+        return redirect("/")
 
-    if not user:
-        return redirect(url_for("login_page"))
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT user_message, ai_message FROM chat_history WHERE username=%s",
+                (session["user"],))
+    chats = cur.fetchall()
+    cur.close()
+    conn.close()
 
-    chats = get_chat_history(user) or []
-
-    return render_template(
-        "main.html",
-        username=user,
-        chats=chats,
-        current_user_message=None,
-        current_ai_message=None,
-        image_file=None,
-        quick_prompt="",
-        search_keyword=""
-    )
+    return render_template("main.html", user=session["user"], chats=chats)
 
 
-# ==============================
-# ASK AI (FIXED)
-# ==============================
-@app.route("/ask_ai", methods=["POST"])
-def ask_ai():
-    user = session.get("user")
-    if not user:
-        return redirect(url_for("login_page"))
+# ---------------- CHAT ----------------
+@app.route("/ask", methods=["POST"])
+def ask():
+    if "user" not in session:
+        return redirect("/")
 
-    prompt = request.form.get("prompt")
+    msg = request.form["message"]
 
-    if not prompt or prompt.strip() == "":
-        return redirect(url_for("main"))
+    reply = "AI Response: " + msg[::-1]  # demo AI (replace with Gemini later)
 
-    if "generate image" in prompt.lower() or "create image" in prompt.lower():
-        image_file, error = generate_image(prompt)
-        reply = error if error else "Image generated"
-    else:
-        reply = generate_text(prompt)
-        image_file = None
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO chat_history (username, user_message, ai_message) VALUES (%s,%s,%s)",
+                (session["user"], msg, reply))
+    conn.commit()
+    cur.close()
+    conn.close()
 
-    save_chat(user, prompt, reply)
-
-    return render_template(
-        "main.html",
-        username=user,
-        chats=get_chat_history(user),
-        current_user_message=prompt,
-        current_ai_message=reply,
-        image_file=image_file,
-        quick_prompt="",
-        search_keyword=""
-    )
+    return redirect("/main")
 
 
-# ==============================
-# LOGOUT
-# ==============================
+# ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("login_page"))
+    return redirect("/")
 
 
-# ==============================
-# RUN
-# ==============================
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
