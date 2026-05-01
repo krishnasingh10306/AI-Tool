@@ -1,32 +1,44 @@
-import os
-import psycopg2
+import sqlite3
 
+DB_NAME = "app.db"
+
+
+# -----------------------------
+# CONNECTION FUNCTION
+# -----------------------------
 def db():
-    return psycopg2.connect(os.getenv("DATABASE_URL"))
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
+# -----------------------------
+# CREATE TABLES
+# -----------------------------
 def create_table():
     conn = db()
     cur = conn.cursor()
 
+    # USERS TABLE
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            username TEXT,
-            email TEXT UNIQUE,
-            password TEXT
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
         )
     """)
 
+    # CHAT HISTORY TABLE
     cur.execute("""
         CREATE TABLE IF NOT EXISTS chat_history (
-            id SERIAL PRIMARY KEY,
-            username TEXT,
-            user_message TEXT,
-            ai_message TEXT
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            user_message TEXT NOT NULL,
+            ai_message TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
     conn.commit()
-    cur.close()
     conn.close()
