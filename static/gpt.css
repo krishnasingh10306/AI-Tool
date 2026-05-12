@@ -691,6 +691,12 @@ input {
    MOBILE DEVICES
    ========================= */
 @media (max-width: 768px) {
+  body {
+    background:
+      radial-gradient(circle at 50% -10%, rgba(0, 255, 170, 0.18), transparent 36%),
+      linear-gradient(180deg, #041111 0%, #020707 48%, #000 100%);
+  }
+
   .blur1 {
     width: 220px;
     height: 220px;
@@ -702,20 +708,28 @@ input {
   }
 
   .sidebar {
-    padding: 16px 14px;
-    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 10px 14px 12px;
+    gap: 8px;
+    background: rgba(3, 12, 12, 0.94);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
   }
 
   .logo {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    justify-content: space-between;
   }
 
   .logo-icon {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .logo-text {
-    font-size: 22px;
+    font-size: 20px;
+    letter-spacing: 1px;
   }
 
   .menu {
@@ -725,8 +739,13 @@ input {
   .menu a {
     flex: 1 1 150px;
     font-size: 14px;
-    padding: 10px 12px;
-    border-radius: 10px;
+    padding: 10px 11px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .menu a:nth-of-type(n + 3) {
+    display: none;
   }
 
   .sidebar-search-form {
@@ -734,7 +753,11 @@ input {
   }
 
   .profile {
-    padding: 10px;
+    padding: 8px 10px;
+    max-width: 420px;
+    margin: 0 auto;
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.06);
   }
 
   .profile img {
@@ -751,28 +774,45 @@ input {
   }
 
   .content {
-    padding: 16px 12px 20px;
+    padding: 14px 0 0;
   }
 
   .subtitle {
     font-size: 11px;
     letter-spacing: 1.5px;
-    margin-bottom: 10px;
+    margin: 0 16px 10px;
   }
 
   .desc {
-    margin-bottom: 18px;
+    margin: 0 18px 18px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .hero h1 {
+    max-width: 560px;
+    padding: 0 18px;
+    font-size: clamp(30px, 10vw, 42px);
+    line-height: 1.08;
+    margin-bottom: 10px;
   }
 
   .chat-wrapper {
-    padding: 14px;
-    border-radius: 18px;
-    min-height: 380px;
+    width: 100%;
+    min-height: calc(100dvh - 330px);
+    padding: 12px 12px 118px;
+    border-radius: 22px 22px 0 0;
+    background: linear-gradient(180deg, rgba(7, 16, 16, 0.72), rgba(0, 0, 0, 0.18));
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-left: none;
+    border-right: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .chat-box,
   .ai-msg {
     padding: 14px;
+    border-radius: 16px;
   }
 
   .box-head h4 {
@@ -794,9 +834,18 @@ input {
   }
 
   .input-box {
+    position: fixed;
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    z-index: 20;
     min-height: auto;
-    padding: 10px 12px;
+    padding: 8px 10px;
     gap: 8px;
+    border-radius: 24px;
+    background: rgba(18, 26, 26, 0.96);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   }
 
   .input-box input {
@@ -815,18 +864,36 @@ input {
   }
 
   .quick-actions {
-    margin-top: 14px;
+    position: fixed;
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 66px);
+    z-index: 19;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-top: 0;
+    padding-bottom: 5px;
     gap: 8px;
+    scrollbar-width: none;
+  }
+
+  .quick-actions::-webkit-scrollbar {
+    display: none;
   }
 
   .quick-actions form {
-    flex: 1 1 calc(50% - 8px);
+    flex: 0 0 auto;
   }
 
   .quick-actions button {
-    width: 100%;
+    width: auto;
     font-size: 13px;
-    padding: 10px 14px;
+    padding: 9px 14px;
+    border-radius: 999px;
+    background: rgba(18, 26, 26, 0.96);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+    white-space: nowrap;
   }
 
   .search-box {
@@ -848,30 +915,62 @@ input {
    ========================= */
 @media (max-width: 480px) {
   .sidebar {
-    padding: 14px 10px;
+    padding: 9px 10px 10px;
   }
 
   .menu {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: stretch;
   }
 
   .menu a {
-    width: 100%;
-    justify-content: flex-start;
+    width: auto;
+    justify-content: center;
+  }
+
+  .menu a:nth-of-type(n + 2) {
+    display: none;
+  }
+
+  .sidebar-search-form {
+    flex-basis: 100%;
+  }
+
+  .bottom-section {
+    margin-top: 8px;
+  }
+
+  .chat-label,
+  .chat-history-list {
+    display: none;
   }
 
   .content {
-    padding: 14px 10px 18px;
+    padding: 14px 0 0;
+  }
+
+  .subtitle {
+    display: none;
   }
 
   .desc {
+    display: block;
+    max-width: 330px;
+    margin-bottom: 14px;
+    color: rgba(255, 255, 255, 0.62);
     line-height: 1.6;
   }
 
+  .hero h1 {
+    padding: 0 14px;
+    margin-bottom: 10px;
+    font-size: clamp(28px, 11vw, 36px);
+  }
+
   .chat-wrapper {
-    padding: 10px;
-    min-height: 360px;
-    border-radius: 16px;
+    padding: 10px 10px 112px;
+    min-height: calc(100dvh - 284px);
+    border-radius: 20px 20px 0 0;
     gap: 10px;
   }
 
@@ -897,7 +996,7 @@ input {
 
   .input-box input {
     height: 38px;
-    min-width: 88px;
+    min-width: 72px;
     font-size: 13px;
   }
 
@@ -912,8 +1011,12 @@ input {
     gap: 5px;
   }
 
+  .input-actions .icon-btn {
+    display: none;
+  }
+
   .quick-actions form {
-    flex-basis: 100%;
+    flex-basis: auto;
   }
 
   .search-box {
