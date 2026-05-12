@@ -189,28 +189,6 @@ body {
   flex-direction: column;
 }
 
-.top-bar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
-}
-
-.theme-btn {
-  border: 1px solid rgba(0, 255, 170, 0.22);
-  background: rgba(255, 255, 255, 0.04);
-  color: white;
-  padding: 10px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.3s ease;
-}
-
-.theme-btn:hover {
-  background: rgba(0, 255, 170, 0.09);
-  color: #00ffaa;
-}
-
 .hero {
   flex: 1;
   display: flex;
@@ -664,11 +642,6 @@ body {
     min-height: auto;
     padding: 20px 18px 24px;
     overflow: visible;
-  }
-
-  .top-bar {
-    justify-content: center;
-    margin-bottom: 12px;
   }
 
   .hero h1 {
