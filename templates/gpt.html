@@ -17,6 +17,18 @@
 
 <div class="main">
 
+  <header class="mobile-topbar">
+    <button type="button" class="mobile-nav-btn" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <a href="{{ url_for('main') }}" class="mobile-brand">KRSNA.I</a>
+
+    <a href="{{ url_for('main') }}" class="mobile-new-chat" aria-label="New chat">
+      <i class="fa-regular fa-comment-dots"></i>
+    </a>
+  </header>
+
   <aside class="sidebar">
 
     <div>
@@ -178,7 +190,7 @@
           <input
             type="text"
             name="prompt"
-            placeholder="Ask anything or generate an image..."
+            placeholder="Ask KRSNA.I"
             value="{{ quick_prompt if quick_prompt else '' }}"
             required
             autocomplete="off"
@@ -209,23 +221,27 @@
       <div class="quick-actions">
 
         <form action="{{ url_for('main') }}" method="POST">
-          <input type="hidden" name="quick_prompt" value="Design a landing page">
-          <button type="submit">Design a landing page</button>
+          <input type="hidden" name="quick_prompt" value="Create an image">
+          <button type="submit">
+            <i class="fa-regular fa-image"></i>
+            <span>Create an image</span>
+          </button>
         </form>
 
         <form action="{{ url_for('main') }}" method="POST">
-          <input type="hidden" name="quick_prompt" value="Write some code">
-          <button type="submit">Write some code</button>
+          <input type="hidden" name="quick_prompt" value="Write or edit">
+          <button type="submit">
+            <i class="fa-solid fa-pencil"></i>
+            <span>Write or edit</span>
+          </button>
         </form>
 
         <form action="{{ url_for('main') }}" method="POST">
-          <input type="hidden" name="quick_prompt" value="Generate UI ideas">
-          <button type="submit">Generate UI ideas</button>
-        </form>
-
-        <form action="{{ url_for('main') }}" method="POST">
-          <input type="hidden" name="quick_prompt" value="Explain a concept">
-          <button type="submit">Explain a concept</button>
+          <input type="hidden" name="quick_prompt" value="Look something up">
+          <button type="submit">
+            <i class="fa-solid fa-globe"></i>
+            <span>Look something up</span>
+          </button>
         </form>
 
       </div>
