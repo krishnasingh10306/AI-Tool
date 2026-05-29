@@ -63,6 +63,7 @@
         </form>
 
         <a href="#"><i class="fa-regular fa-image"></i> Images</a>
+        <a href="#"><i class="fa-solid fa-video"></i> Videos</a>
         <a href="#"><i class="fa-solid fa-table-cells-large"></i> Apps</a>
         <a href="#"><i class="fa-regular fa-folder-open"></i> Projects</a>
 
@@ -174,6 +175,22 @@
           </div>
           {% endif %}
 
+          {% if video_file %}
+          <div class="chat-box ai-msg">
+            <div class="box-head"><h4>Generated Video</h4></div>
+
+            <div class="msg-text video-wrap">
+              <video src="{{ url_for('static', filename=video_file) }}" class="generated-video" controls playsinline></video>
+            </div>
+
+            <div class="download-section">
+              <a href="{{ url_for('static', filename=video_file) }}" download class="download-btn">
+                <i class="fa-solid fa-download"></i> Download Video
+              </a>
+            </div>
+          </div>
+          {% endif %}
+
         </div>
 
         <!-- INPUT -->
@@ -225,6 +242,14 @@
           <button type="submit">
             <i class="fa-regular fa-image"></i>
             <span>Create an image</span>
+          </button>
+        </form>
+
+        <form action="{{ url_for('main') }}" method="POST">
+          <input type="hidden" name="quick_prompt" value="Create a video">
+          <button type="submit">
+            <i class="fa-solid fa-video"></i>
+            <span>Create a video</span>
           </button>
         </form>
 
