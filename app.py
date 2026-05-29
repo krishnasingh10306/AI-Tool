@@ -12,11 +12,6 @@ from email.mime.multipart import MIMEMultipart
 
 from google import genai
 from diffusers import StableDiffusionPipeline
-from diffusers.utils import export_to_video
-try:
-    from diffusers import TextToVideoSDPipeline
-except ImportError:
-    TextToVideoSDPipeline = None
 import torch
 from huggingface_hub import login
 
@@ -44,7 +39,6 @@ except Exception as e:
 
 
 image_pipe = None
-video_pipe = None
 try:
     if HF_TOKEN:
         login(token=HF_TOKEN)
@@ -160,118 +154,6 @@ def clean_image_prompt(prompt):
         prompt = prompt.replace(word, "")
 
     return prompt.strip()
-
-
-def is_video_prompt(prompt):
-    prompt = prompt.lower()
-
-    video_words = [
-        "generate video",
-        "create video",
-        "make video",
-        "text to video",
-        "video of",
-        "short video",
-        "animation of",
-        "animated video",
-        "movie clip",
-        "clip of"
-    ]
-
-    return any(word in prompt for word in video_words)
-
-
-def clean_video_prompt(prompt):
-    prompt = prompt.lower()
-
-    remove_words = [
-        "generate video of",
-        "create video of",
-        "make video of",
-        "generate video",
-        "create video",
-        "make video",
-        "text to video",
-        "video of",
-        "short video of",
-        "animation of",
-        "animated video of",
-        "movie clip of",
-        "clip of"
-    ]
-
-    for word in remove_words:
-        prompt = prompt.replace(word, "")
-
-    return prompt.strip()
-
-
-def load_video_pipe():
-    global video_pipe
-
-    if video_pipe is not None:
-        return video_pipe, None
-
-    if not HF_TOKEN:
-        return None, "HF_TOKEN not found. Video generation will not work."
-
-    if TextToVideoSDPipeline is None:
-        return None, "Your diffusers version does not support text-to-video. Please update diffusers."
-
-    try:
-        video_pipe = TextToVideoSDPipeline.from_pretrained(
-            "damo-vilab/text-to-video-ms-1.7b",
-            torch_dtype=torch.float32
-        )
-        video_pipe = video_pipe.to("cpu")
-        video_pipe.enable_attention_slicing()
-
-        print("Text-to-video model loaded successfully.")
-        return video_pipe, None
-
-    except Exception as e:
-        print("Video model loading error:", e)
-        video_pipe = None
-        return None, f"Video model loading error: {e}"
-
-
-def generate_video(prompt):
-    try:
-        pipe, error = load_video_pipe()
-        if error:
-            return None, error
-
-        output_folder = os.path.join("static", "generated")
-        os.makedirs(output_folder, exist_ok=True)
-
-        final_prompt = clean_video_prompt(prompt)
-
-        if not final_prompt:
-            return None, "Please enter a proper video prompt."
-
-        if len(final_prompt) < 3:
-            return None, "Video prompt is too short."
-
-        if len(final_prompt) > 300:
-            return None, "Video prompt is too long."
-
-        result = pipe(
-            final_prompt,
-            num_inference_steps=15,
-            num_frames=16,
-            height=256,
-            width=256
-        )
-
-        filename = f"generated/vid_{int(time.time())}.mp4"
-        full_path = os.path.join("static", filename)
-        export_to_video(result.frames[0], full_path, fps=8)
-
-        return filename, None
-
-    except Exception as e:
-        print("Video generation error:", e)
-        return None, f"Error: {e}"
 
 
 def generate_image(prompt):
@@ -549,8 +431,7 @@ def main():
         quick_prompt=quick_prompt,
         current_user_message=None,
         current_ai_message=None,
-        image_file=None,
-        video_file=None
+        image_file=None
     )
 
 
@@ -570,12 +451,8 @@ def ask_ai():
         return redirect(url_for("main"))
 
     image_file = None
-    video_file = None
 
-    if is_video_prompt(prompt):
-        video_file, error = generate_video(prompt)
-        ai_response = error if error else "Video generated successfully."
-    elif is_image_prompt(prompt):
+    if is_image_prompt(prompt):
         image_file, error = generate_image(prompt)
         ai_response = error if error else "Image generated successfully."
     else:
@@ -587,8 +464,7 @@ def ask_ai():
         "id": chat_id,
         "user_message": prompt,
         "ai_message": ai_response,
-        "image_file": image_file,
-        "video_file": video_file
+        "image_file": image_file
     }
 
     session["chat_history"].append(new_chat)
@@ -601,7 +477,6 @@ def ask_ai():
         current_user_message=prompt,
         current_ai_message=ai_response,
         image_file=image_file,
-        video_file=video_file,
         search_keyword=None,
         quick_prompt=None
     )
@@ -631,8 +506,7 @@ def search_chats():
         quick_prompt=None,
         current_user_message=None,
         current_ai_message=None,
-        image_file=None,
-        video_file=None
+        image_file=None
     )
 
 
@@ -662,7 +536,6 @@ def open_chat(chat_id):
         current_user_message=selected_chat.get("user_message"),
         current_ai_message=selected_chat.get("ai_message"),
         image_file=selected_chat.get("image_file"),
-        video_file=selected_chat.get("video_file"),
         search_keyword=None,
         quick_prompt=None
     )

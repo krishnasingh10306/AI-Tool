@@ -8,5 +8,3 @@ huggingface-hub
 transformers
 accelerate
 safetensors
-imageio
-imageio-ffmpeg

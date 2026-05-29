@@ -389,10 +389,6 @@ input {
   max-height: 220px;
 }
 
-.video-wrap {
-  max-height: 260px;
-}
-
 .generated-image {
   width: 100%;
   max-width: 320px;
@@ -400,16 +396,6 @@ input {
   margin: 0 auto;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.generated-video {
-  width: 100%;
-  max-width: 420px;
-  display: block;
-  margin: 0 auto;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: #000;
 }
 
 /* input */
@@ -833,10 +819,6 @@ input {
   }
 
   .generated-image {
-    max-width: 100%;
-  }
-
-  .generated-video {
     max-width: 100%;
   }
 
