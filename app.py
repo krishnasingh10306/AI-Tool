@@ -13,7 +13,7 @@ from email.mime.multipart import MIMEMultipart
 from google import genai
 from diffusers import StableDiffusionPipeline
 import torch
-from huggingface_hub import login
+from huggingface_hub import login, InferenceClient
 
 
 app = Flask(__name__)
@@ -24,6 +24,10 @@ create_table()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
 HF_TOKEN = os.getenv("HF_TOKEN")
+
+# Video API settings
+VIDEO_PROVIDER = os.getenv("VIDEO_PROVIDER", "fal-ai")
+VIDEO_MODEL = os.getenv("VIDEO_MODEL", "Wan-AI/Wan2.2-TI2V-5B")
 
 
 client = None
@@ -36,6 +40,22 @@ try:
 except Exception as e:
     print("Gemini setup error:", e)
     client = None
+
+
+video_client = None
+try:
+    if HF_TOKEN:
+        video_client = InferenceClient(
+            provider=VIDEO_PROVIDER,
+            api_key=HF_TOKEN,
+            timeout=300,
+        )
+        print("Video API client loaded successfully.")
+    else:
+        print("HF_TOKEN not found. Video generation will not work.")
+except Exception as e:
+    print("Video API setup error:", e)
+    video_client = None
 
 
 image_pipe = None
@@ -193,6 +213,91 @@ def generate_image(prompt):
 
     except Exception as e:
         print("Image generation error:", e)
+        return None, f"Error: {e}"
+
+
+def is_video_prompt(prompt):
+    prompt = prompt.lower()
+
+    video_words = [
+        "generate video",
+        "create video",
+        "make video",
+        "text to video",
+        "ai video",
+        "video of",
+        "short video",
+        "cinematic video",
+        "animate this",
+        "animation of",
+        "make a clip",
+        "create a clip",
+        "generate a clip"
+    ]
+
+    return any(word in prompt for word in video_words)
+
+
+def clean_video_prompt(prompt):
+    prompt = prompt.lower()
+
+    remove_words = [
+        "generate video of",
+        "create video of",
+        "make video of",
+        "generate video",
+        "create video",
+        "make video",
+        "text to video",
+        "ai video of",
+        "video of",
+        "short video of",
+        "cinematic video of",
+        "make a clip of",
+        "create a clip of",
+        "generate a clip of"
+    ]
+
+    for word in remove_words:
+        prompt = prompt.replace(word, "")
+
+    return prompt.strip()
+
+
+def generate_video(prompt):
+    try:
+        if video_client is None:
+            return None, "Video API is not loaded. Please set HF_TOKEN correctly."
+
+        output_folder = os.path.join("static", "generated")
+        os.makedirs(output_folder, exist_ok=True)
+
+        final_prompt = clean_video_prompt(prompt)
+
+        if not final_prompt:
+            return None, "Please enter a proper video prompt."
+
+        if len(final_prompt) < 3:
+            return None, "Video prompt is too short."
+
+        if len(final_prompt) > 500:
+            return None, "Video prompt is too long."
+
+        video_bytes = video_client.text_to_video(
+            final_prompt,
+            model=VIDEO_MODEL,
+        )
+
+        filename = f"generated/video_{int(time.time())}.mp4"
+        full_path = os.path.join("static", filename)
+
+        with open(full_path, "wb") as f:
+            f.write(video_bytes)
+
+        return filename, None
+
+    except Exception as e:
+        print("Video generation error:", e)
         return None, f"Error: {e}"
 
 
@@ -431,7 +536,8 @@ def main():
         quick_prompt=quick_prompt,
         current_user_message=None,
         current_ai_message=None,
-        image_file=None
+        image_file=None,
+        video_file=None
     )
 
 
@@ -451,8 +557,12 @@ def ask_ai():
         return redirect(url_for("main"))
 
     image_file = None
+    video_file = None
 
-    if is_image_prompt(prompt):
+    if is_video_prompt(prompt):
+        video_file, error = generate_video(prompt)
+        ai_response = error if error else "Video generated successfully."
+    elif is_image_prompt(prompt):
         image_file, error = generate_image(prompt)
         ai_response = error if error else "Image generated successfully."
     else:
@@ -464,7 +574,8 @@ def ask_ai():
         "id": chat_id,
         "user_message": prompt,
         "ai_message": ai_response,
-        "image_file": image_file
+        "image_file": image_file,
+        "video_file": video_file
     }
 
     session["chat_history"].append(new_chat)
@@ -477,6 +588,7 @@ def ask_ai():
         current_user_message=prompt,
         current_ai_message=ai_response,
         image_file=image_file,
+        video_file=video_file,
         search_keyword=None,
         quick_prompt=None
     )
@@ -506,7 +618,8 @@ def search_chats():
         quick_prompt=None,
         current_user_message=None,
         current_ai_message=None,
-        image_file=None
+        image_file=None,
+        video_file=None
     )
 
 
@@ -536,6 +649,7 @@ def open_chat(chat_id):
         current_user_message=selected_chat.get("user_message"),
         current_ai_message=selected_chat.get("ai_message"),
         image_file=selected_chat.get("image_file"),
+        video_file=selected_chat.get("video_file"),
         search_keyword=None,
         quick_prompt=None
     )

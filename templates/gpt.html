@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Open AI Styled UI</title>
+  <title>KRSNA.I AI Workspace</title>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='gpt.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -32,20 +32,17 @@
   <aside class="sidebar">
 
     <div>
-      <!-- Logo -->
       <div class="logo">
         <span class="logo-icon">⬢</span>
         <span class="logo-text">KRSNA.I</span>
       </div>
 
-      <!-- MENU -->
       <nav class="menu">
 
         <a href="{{ url_for('main') }}">
           <i class="fa-regular fa-pen-to-square"></i> New chats
         </a>
 
-        <!-- SEARCH -->
         <form action="{{ url_for('search_chats') }}" method="POST" class="sidebar-search-form">
           <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -63,6 +60,7 @@
         </form>
 
         <a href="#"><i class="fa-regular fa-image"></i> Images</a>
+        <a href="#"><i class="fa-solid fa-video"></i> Videos</a>
         <a href="#"><i class="fa-solid fa-table-cells-large"></i> Apps</a>
         <a href="#"><i class="fa-regular fa-folder-open"></i> Projects</a>
 
@@ -75,7 +73,6 @@
       {% endif %}
     </div>
 
-    
     <div class="bottom-section">
 
       <p class="chat-label">
@@ -100,7 +97,6 @@
         {% endif %}
       </div>
 
-      <!-- PROFILE -->
       <div class="profile">
         <div class="profile-text">
           <h4>{{ username }}</h4>
@@ -116,19 +112,17 @@
 
   </aside>
 
-  <!-- ================= MAIN ================= -->
   <main class="content">
 
     <div class="hero">
       <p class="subtitle">SMART CONVERSATIONS • CREATIVE TOOLS • AI WORKSPACE</p>
       <h1>What’s on your mind today?</h1>
       <p class="desc">
-        Start a new conversation, generate ideas, build projects, and explore creative possibilities.
+        Start a new conversation, generate ideas, create images, generate videos, and build projects.
       </p>
 
       <div class="chat-wrapper">
 
-        <!-- FLASH -->
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, msg in messages %}
@@ -137,7 +131,6 @@
           {% endif %}
         {% endwith %}
 
-        <!-- MESSAGES -->
         <div class="messages-area">
 
           {% if current_user_message %}
@@ -174,15 +167,31 @@
           </div>
           {% endif %}
 
+          {% if video_file %}
+          <div class="chat-box ai-msg">
+            <div class="box-head"><h4>Generated Video</h4></div>
+
+            <div class="msg-text video-wrap">
+              <video class="generated-video" width="500" controls>
+                <source src="{{ url_for('static', filename=video_file) }}" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+
+            <div class="download-section">
+              <a href="{{ url_for('static', filename=video_file) }}" download class="download-btn">
+                <i class="fa-solid fa-download"></i> Download Video
+              </a>
+            </div>
+          </div>
+          {% endif %}
+
         </div>
 
-        <!-- INPUT -->
         <form action="{{ url_for('ask_ai') }}" method="POST" class="input-box" enctype="multipart/form-data">
 
-          <!-- hidden file input -->
           <input type="file" id="fileInput" name="chat_file" style="display:none;">
 
-          <!-- plus -->
           <button type="button" class="icon-btn" id="plusBtn">
             <i class="fa-solid fa-plus"></i>
           </button>
@@ -190,15 +199,15 @@
           <input
             type="text"
             name="prompt"
+            id="promptInput"
             placeholder="Ask KRSNA.I"
-            value="{{ quick_prompt if quick_prompt else '' }}"
+            value=""
             required
             autocomplete="off"
           >
 
           <div class="input-actions">
 
-            <!-- paperclip -->
             <button type="button" class="icon-btn" id="attachBtn">
               <i class="fa-solid fa-paperclip"></i>
             </button>
@@ -207,7 +216,7 @@
               <i class="fa-solid fa-microphone"></i>
             </button>
 
-            <button type="submit" class="send-btn">
+            <button type="submit" class="send-btn" id="sendBtn">
               <i class="fa-solid fa-arrow-up"></i>
             </button>
 
@@ -217,32 +226,27 @@
 
       </div>
 
-      <!-- QUICK ACTIONS -->
       <div class="quick-actions">
 
-        <form action="{{ url_for('main') }}" method="POST">
-          <input type="hidden" name="quick_prompt" value="Create an image">
-          <button type="submit">
-            <i class="fa-regular fa-image"></i>
-            <span>Create an image</span>
-          </button>
-        </form>
+        <button type="button" class="quick-btn" data-placeholder="Describe your image">
+          <i class="fa-regular fa-image"></i>
+          <span>Create an image</span>
+        </button>
 
-        <form action="{{ url_for('main') }}" method="POST">
-          <input type="hidden" name="quick_prompt" value="Write or edit">
-          <button type="submit">
-            <i class="fa-solid fa-pencil"></i>
-            <span>Write or edit</span>
-          </button>
-        </form>
+        <button type="button" class="quick-btn" data-placeholder="Describe your video">
+          <i class="fa-solid fa-video"></i>
+          <span>Create a video</span>
+        </button>
 
-        <form action="{{ url_for('main') }}" method="POST">
-          <input type="hidden" name="quick_prompt" value="Look something up">
-          <button type="submit">
-            <i class="fa-solid fa-globe"></i>
-            <span>Look something up</span>
-          </button>
-        </form>
+        <button type="button" class="quick-btn" data-placeholder="Write or edit your text">
+          <i class="fa-solid fa-pencil"></i>
+          <span>Write or edit</span>
+        </button>
+
+        <button type="button" class="quick-btn" data-placeholder="Ask anything you want to know">
+          <i class="fa-solid fa-globe"></i>
+          <span>Look something up</span>
+        </button>
 
       </div>
 
@@ -251,9 +255,9 @@
   </main>
 </div>
 
-<!-- JS -->
 <script>
 const messagesArea = document.querySelector(".messages-area");
+
 if (messagesArea) {
   messagesArea.scrollTop = messagesArea.scrollHeight;
 }
@@ -261,6 +265,8 @@ if (messagesArea) {
 const fileInput = document.getElementById("fileInput");
 const plusBtn = document.getElementById("plusBtn");
 const attachBtn = document.getElementById("attachBtn");
+const sendBtn = document.getElementById("sendBtn");
+const promptInput = document.getElementById("promptInput");
 
 if (plusBtn) {
   plusBtn.addEventListener("click", () => fileInput.click());
@@ -268,6 +274,23 @@ if (plusBtn) {
 
 if (attachBtn) {
   attachBtn.addEventListener("click", () => fileInput.click());
+}
+
+document.querySelectorAll(".quick-btn").forEach(button => {
+  button.addEventListener("click", () => {
+    if (promptInput) {
+      const newPlaceholder = button.getAttribute("data-placeholder");
+      promptInput.placeholder = newPlaceholder;
+      promptInput.value = "";
+      promptInput.focus();
+    }
+  });
+});
+
+if (sendBtn) {
+  sendBtn.addEventListener("click", () => {
+    sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  });
 }
 </script>
 

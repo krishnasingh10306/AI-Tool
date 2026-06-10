@@ -1015,3 +1015,14 @@ input {
   color: inherit;
   display: block;
 }
+.generated-video {
+  max-width: 100%;
+  border-radius: 16px;
+  margin-top: 10px;
+}
+
+.video-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
